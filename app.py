@@ -5,18 +5,24 @@ class User:
         self.name = name
         self.email = email
 
-    def __repr__(self):
-        return 'User: %s <%s>' % (self.name, self.email)
+    @property
+    def url(self): return '#'
 
-def user_factory():
-    return User(faker.name.name(), faker.internet.email())
+    def __repr__(self): return 'User: %s <%s>' % (self.name, self.email)
+
+    @staticmethod
+    def factory(number=10):
+        return stream.repeatcall(lambda: User(faker.name.name(), faker.internet.email())) >> stream.item[:number]
 
 bottle.debug(True)
 
 templates = dict(
-    row = '<tr><td><a href="#">{0.name} &lt;{0.email}&gt;</a></td></tr>',
+    anchor = '<a href="{0.url}">{0}</a>',
+    tr = '<tr><td>{0}</td></tr>',
     table = '<table>{0}</table>',
     page = '<html><body>{0}</body></html>',
+    li = '<li>{0}</li>',
+    ul = '<ul>{0}</ul>',
 )
 
 class Template(stream.Stream):
@@ -34,14 +40,18 @@ class Template(stream.Stream):
     def __pipe__(self, inpipe):
         return ''.join(itertools.imap(self.function, inpipe))
 
+def collect(*names):
+    class process(stream.Stream):
+        def __pipe__(self, inpipe): return [ inpipe >> Template(*names) ]
+    return process()
+
 @bottle.route('/', method='GET')
 def root(): return index()
 
 @bottle.route('/:number', method='GET')
 def index(number = 20):
     number = int(number)
-    rows = [ stream.repeatcall(user_factory) >> stream.item[:number] >> Template('row') ]
-    return rows >> Template('table', 'page')
+    return [ User.factory() >> Template('anchor', 'tr') ] >> Template('table', 'page')
 
 @bottle.route('show', method='GET')
 def show():
