@@ -8,13 +8,10 @@ class User:
     def __repr__(self):
         return 'User: %s <%s>' % (self.name, self.email)
 
-def UserFactory():
-    while True:
-        yield User(faker.name.name(), faker.internet.email())
+def user_factory():
+    return User(faker.name.name(), faker.internet.email())
 
 bottle.debug(True)
-
-tuples = {}
 
 templates = dict(
     row = '<tr><td><a href="#">{0.name} &lt;{0.email}&gt;</a></td></tr>',
@@ -25,6 +22,7 @@ templates = dict(
 class Template(stream.Stream):
     def __init__(self, *names, **variables):
         super(Template, self).__init__()
+
         self.names = names
         self.variables = variables
 
@@ -37,9 +35,13 @@ class Template(stream.Stream):
         return ''.join(itertools.imap(self.function, inpipe))
 
 @bottle.route('/', method='GET')
-def index():
-    users = UserFactory()
-    return [ stream.repeatcall(users.next) >> stream.item[:20] >> Template('row') ] >> Template('table', 'page')
+def root(): return index()
+
+@bottle.route('/:number', method='GET')
+def index(number = 20):
+    number = int(number)
+    rows = [ stream.repeatcall(user_factory) >> stream.item[:number] >> Template('row') ]
+    return rows >> Template('table', 'page')
 
 @bottle.route('show', method='GET')
 def show():
