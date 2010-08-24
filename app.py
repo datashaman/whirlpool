@@ -42,27 +42,27 @@ def index():
     return [ stream.repeatcall(users.next) >> stream.item[:20] >> Template('row') ] >> Template('table', 'page')
 
 @bottle.route('show', method='GET')
-def show(self):
+def show():
     return 'show'
 
 @bottle.route('create', method='POST')
-def create(self):
+def create():
     return 'create'
 
 @bottle.route('update', method='PUT')
-def update(self):
+def update():
     return 'update'
 
 @bottle.route('destroy', method='DELETE')
-def destroy(self):
+def destroy():
     return 'destroy'
 
 @bottle.route('new', method='GET')
-def new(self):
+def new():
     return 'new'
 
 @bottle.route('edit', method='GET')
-def edit(self):
+def edit():
     return 'edit'
 
 bottle.run(reloader=True)
