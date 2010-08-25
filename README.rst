@@ -6,13 +6,10 @@ whirlpool
 Installation
 ------------
 
-The easiest way to get whirlpool is if you have setuptools_ installed::
-
-	easy_install whirlpool
-
-Without setuptools, it's still pretty easy. Download the ZIP_, unzip it and run::
+The easiest way to get whirlpool is to clone the repository_, or unpack the ZIP_
+and run:
 
 	python setup.py install
 
-.. _setuptools: http://peak.telecommunity.com/DevCenter/EasyInstall
+.. _repository: git@github.com:datashaman/whirlpool.git
 .. _ZIP: http://github.com/datashaman/whirlpool/zipball/master
