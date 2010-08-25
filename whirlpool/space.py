@@ -1,2 +1,0 @@
-class Space(dict):
-    pass
