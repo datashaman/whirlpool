@@ -1,3 +1,4 @@
 *.pyc
 data/*.sqlite
 virtual-env/*
+whirlpool.egg-info/*
