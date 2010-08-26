@@ -1,4 +1,7 @@
-import stream, bottle, itertools, model
+import stream, bottle, model
+
+# user = model.User()
+# user.objects.create(10)
 
 bottle.debug(True)
 
@@ -10,6 +13,10 @@ templates = dict(
     li = '<li>{0}</li>',
     ul = '<ul>{0}</ul>',
 )
+
+PAGE_SIZE = 10
+
+paginate = lambda page: ((int(page) - 1) * PAGE_SIZE, int(page) * PAGE_SIZE)
 
 class Template(stream.Stream):
     def __init__(self, *names, **variables):
@@ -24,20 +31,25 @@ class Template(stream.Stream):
         return outp
 
     def __pipe__(self, inpipe):
-        return itertools.imap(self.function, inpipe)
+        return map(self.function, inpipe)
 
 def collect(*names):
     class process(stream.Stream):
-        def __pipe__(self, inpipe): return [ inpipe >> Template(*names) ]
+        def __pipe__(self, inpipe): return [ ''.join(inpipe >> Template(*names)) ]
     return process()
 
 @bottle.route('/', method='GET')
 def root(): return index()
 
+def get_page(query, page):
+    start, end = paginate(page)
+    return query[start:end]
+
 @bottle.route('/:page', method='GET')
 def index(page=1):
-    users = stream.Stream(model.User.paginate(page))
-    return [ ''.join(users >> Template('tr')) ] >> Template('table', 'page')
+    query = model.User.objects.filter(login='smith_adolph')
+    users = get_page(query, page)
+    return users >> collect('tr') >> Template('table', 'page')
 
 @bottle.route('show', method='GET')
 def show():

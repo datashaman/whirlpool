@@ -58,6 +58,6 @@ class Whirlpool(redis.Redis):
             time.sleep(FETCH_INTERVAL)
          
     def read(self, template):
-        while self.exists(template) == 0:
-            time.sleep(FETCH_INTERVAL)
-        return self.get(template)
+        result = self.blpop(template)
+        print result
+        self.lpush(template)

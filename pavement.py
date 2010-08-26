@@ -27,6 +27,10 @@ classifiers = [
 install_requires = [
     # -*- Install requires: -*-
     'setuptools',
+    "bottle",
+    "redis",
+    "redisco",
+    "virtualenv",
     ]
 
 entry_points="""
@@ -71,6 +75,9 @@ options(
             "nose",
             "Sphinx>=0.6b1",
             "pkginfo", 
+            "bottle",
+            "redis",
+            "redisco",
             "virtualenv"],
         dest_dir='./virtual-env/',
         install_paver=True,
