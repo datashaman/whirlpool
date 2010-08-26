@@ -1,22 +1,19 @@
-import stream, bottle, model
+import stream, bottle, model, itertools
 
-# user = model.User()
-# user.objects.create(10)
+# [model.User.fake() for x in range(1000000)]
 
 bottle.debug(True)
 
 templates = dict(
-    anchor = '<a href="{0.url}">{0}</a>',
-    tr = '<tr><td>{0.login}</td><td>{0.name}</td><td>{0.email}</td></tr>',
+    tr = '<tr><td><a href="{0.url}">{0.login}</a></td><td>{0.name}</td><td>{0.email}</td></tr>',
     table = '<table>{0}</table>',
     page = '<html><body>{0}</body></html>',
     li = '<li>{0}</li>',
     ul = '<ul>{0}</ul>',
+    user = '',
 )
 
 PAGE_SIZE = 10
-
-paginate = lambda page: ((int(page) - 1) * PAGE_SIZE, int(page) * PAGE_SIZE)
 
 class Template(stream.Stream):
     def __init__(self, *names, **variables):
@@ -26,34 +23,32 @@ class Template(stream.Stream):
         self.variables = variables
 
     def function(self, inp):
-        outp = inp
-        for name in self.names: outp = templates[name].format(outp, **self.variables)
-        return outp
+        for name in self.names: inp = templates[name].format(inp, **self.variables)
+        return inp
 
     def __pipe__(self, inpipe):
-        return map(self.function, inpipe)
-
-def collect(*names):
-    class process(stream.Stream):
-        def __pipe__(self, inpipe): return [ ''.join(inpipe >> Template(*names)) ]
-    return process()
+        return [ ''.join(map(self.function, inpipe)) ]
 
 @bottle.route('/', method='GET')
 def root(): return index()
 
-def get_page(query, page):
-    start, end = paginate(page)
-    return query[start:end]
+class Page(stream.Stream):
+    def __init__(self, page=1, page_size=PAGE_SIZE):
+        self.start, self.end = ((int(page) - 1) * page_size, int(page) * page_size)
+
+    def __call__(self, inpipe):
+        return itertools.islice(iter(inpipe), self.start, self.end)
 
 @bottle.route('/:page', method='GET')
 def index(page=1):
-    query = model.User.objects.filter(login='smith_adolph')
-    users = get_page(query, page)
-    return users >> collect('tr') >> Template('table', 'page')
+    query = model.User.objects.order('login')
+    return query >> Page(page) >> Template('tr') >> Template('table', 'page')
 
-@bottle.route('show', method='GET')
-def show():
-    return 'show'
+@bottle.route('show/:id', method='GET')
+def show(id):
+    query = model.User.objects.get_by_id(id)
+    print query.attributes
+    return [query] >> Template('user', 'page')
 
 @bottle.route('create', method='POST')
 def create():

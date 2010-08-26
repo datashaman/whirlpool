@@ -16,7 +16,7 @@ class User(models.Model):
 
     @property
     def url(self): 
-        return '/user/%s' % self.login
+        return 'show/%s' % self.id
 
     def __repr__(self):
         return '%s: %s &lt;%s&gt;' % (self.login, self.name, self.email)

@@ -61,3 +61,4 @@ class Whirlpool(redis.Redis):
         result = self.blpop(template)
         print result
         self.lpush(template)
+        return result
