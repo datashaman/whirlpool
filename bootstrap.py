@@ -1134,6 +1134,8 @@ def after_install(options, home_dir):
     subprocess.call([join(bin_dir, 'easy_install'), 'nose'])
     subprocess.call([join(bin_dir, 'easy_install'), 'Sphinx>=0.6b1'])
     subprocess.call([join(bin_dir, 'easy_install'), 'pkginfo'])
+    subprocess.call([join(bin_dir, 'easy_install'), 'bottle'])
+    subprocess.call([join(bin_dir, 'easy_install'), 'redis'])
     subprocess.call([join(bin_dir, 'easy_install'), 'virtualenv'])
 
 
